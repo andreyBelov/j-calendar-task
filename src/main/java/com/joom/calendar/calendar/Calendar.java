@@ -20,7 +20,7 @@ public class Calendar {
     private Long id;
     @Column(unique=true)
     private String name;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="OWNER_ID", nullable=false)
     private User user;
 
