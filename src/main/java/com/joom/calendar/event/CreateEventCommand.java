@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Value;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Value
 public class CreateEventCommand {
@@ -19,4 +20,5 @@ public class CreateEventCommand {
     LocalDateTime endDateTime;
     PredefinedSchedule predefinedSchedule;
     EventVisibility eventVisibility;
+    Set<Long> inviteeIds;
 }

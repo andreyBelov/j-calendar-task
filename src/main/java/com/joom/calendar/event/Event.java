@@ -1,6 +1,8 @@
 package com.joom.calendar.event;
 
 import com.joom.calendar.calendar.Calendar;
+import com.joom.calendar.invitee.Invitee;
+import com.joom.calendar.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +10,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,4 +35,30 @@ public class Event {
     private String cron;
     @Enumerated(EnumType.STRING)
     private EventVisibility eventVisibility;
+    @OneToMany(
+            mappedBy = "event",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Invitee> invitees = new ArrayList<>();
+
+    public void addInvitees(List<User> users) {
+        List<Invitee> invitees = users.stream()
+                .map(u -> new Invitee(u, this))
+                .toList();
+        this.invitees.addAll(invitees);
+    }
+
+    public void removeUser(User user) {
+        for (Iterator<Invitee> iterator = invitees.iterator();
+             iterator.hasNext(); ) {
+            Invitee invitee = iterator.next();
+            if (invitee.getEvent().equals(this) &&
+                    invitee.getUser().equals(user)) {
+                iterator.remove();
+                invitee.setEvent(null);
+                invitee.setUser(null);
+            }
+        }
+    }
 }
