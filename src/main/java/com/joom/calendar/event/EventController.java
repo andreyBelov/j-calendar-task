@@ -13,15 +13,19 @@ public class EventController {
 
     private final EventService eventService;
 
-    @GetMapping("/calendars/{calendarId}/events")
+    @GetMapping("/events")
     public Page<Event> findAllEvents(@ParameterObject Pageable pageable) {
         return eventService.findEvents(pageable);
     }
 
-    @PostMapping("/calendars/{calendarId}/events")
-    public void createEvent(@PathVariable Long calendarId, @RequestBody CreateEventCommand createEventCommand) {
-        System.out.println(createEventCommand.getStartDateTime());
-        eventService.createEvent(calendarId, createEventCommand);
+    @GetMapping("/events/{id}")
+    public EventDetailsDto findEventById(@PathVariable Long id) {
+        return eventService.findById(id);
+    }
+
+    @PostMapping("/events")
+    public void createEvent(@RequestBody CreateEventCommand createEventCommand) {
+        eventService.createEvent(createEventCommand);
     }
 
 }

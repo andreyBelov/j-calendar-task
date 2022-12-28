@@ -8,6 +8,7 @@ import java.util.Set;
 
 @Value
 public class CreateEventCommand {
+    Long calendarId;
     @Schema(type = "string", required = true, example = "Обсуждение интерфейса календаря")
     String name;
     @Schema(type = "string", required = true, example = "1. Цвет календаря\n 2. Шрифт")

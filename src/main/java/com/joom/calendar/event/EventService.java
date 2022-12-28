@@ -26,15 +26,22 @@ public class EventService {
     public Page<Event> findEvents(Pageable pageable) {
         return eventRepository.findAll(pageable);
     }
-    public void createEvent(Long calendarId, CreateEventCommand createEventCommand) {
-        Optional<Calendar> calendarOpt = calendarRepository.findById(calendarId);
+
+    public EventDetailsDto findById(Long id) {
+        return eventRepository.findById(id)
+                .map(eventMapper::map)
+                .orElseThrow(() -> new EntityNotFoundException("Event with id = " + id + " is not found"));
+    }
+
+    public void createEvent(CreateEventCommand cec) {
+        Optional<Calendar> calendarOpt = calendarRepository.findById(cec.getCalendarId());
         if (calendarOpt.isPresent()) {
-            Event event = eventMapper.map(createEventCommand);
+            Event event = eventMapper.map(cec);
             event.setCalendar(calendarOpt.get());
-            addInviteesToEvent(event, createEventCommand.getInviteeIds());
+            addInviteesToEvent(event, cec.getInviteeIds());
             eventRepository.save(event);
         } else {
-            throw new EntityNotFoundException("Calendar with id = " + calendarId + " is not found");
+            throw new EntityNotFoundException("Calendar with id = " + cec.getCalendarId() + " is not found");
         }
     }
 
