@@ -28,4 +28,9 @@ public class EventController {
         eventService.createEvent(createEventCommand);
     }
 
+    @PostMapping("/events/{id}/answer")
+    public void saveAnswer(@PathVariable Long id, @RequestBody SaveAnswerCommand saveAnswerCommand) {
+        eventService.saveAnswer(id, saveAnswerCommand);
+    }
+
 }

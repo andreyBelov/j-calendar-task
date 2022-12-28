@@ -16,15 +16,17 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Table(name = "INVITEES")
 public class Invitee {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+
+    @EmbeddedId
+    private InviteeId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("userId")
     @JoinColumn(name = "USER_ID")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("eventId")
     @JoinColumn(name = "EVENT_ID")
     private Event event;
 
@@ -35,5 +37,6 @@ public class Invitee {
         this.user = user;
         this.event = event;
         this.answer = Answer.UNKNOWN;
+        this.id = new InviteeId(user.getId(), user.getId());
     }
 }
