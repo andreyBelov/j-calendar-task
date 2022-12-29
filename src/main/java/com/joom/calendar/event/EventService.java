@@ -8,18 +8,25 @@ import com.joom.calendar.invitee.InviteeRepository;
 import com.joom.calendar.user.User;
 import com.joom.calendar.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.joom.calendar.event.EventSearchSpecs.*;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EventService {
 
     private final EventRepository eventRepository;
@@ -28,8 +35,32 @@ public class EventService {
     private final InviteeRepository inviteeRepository;
     private final EventMapper eventMapper;
 
-    public Page<Event> findEvents(Pageable pageable) {
-        return eventRepository.findAll(pageable);
+    public List<EventDetailsDto> findEventsByUserIdAndBounds(Long userId, LocalDateTime from, LocalDateTime to) {
+        Specification<Event> byUserIdAndBounds = byUserId(userId)
+                .and(byBounds(from, to));
+        return eventRepository.findAll(byUserIdAndBounds).stream()
+                .flatMap(e -> multiplyEventByCron(e, from, to).stream())
+                .toList();
+    }
+
+    private List<EventDetailsDto> multiplyEventByCron(Event event, LocalDateTime from, LocalDateTime to) {
+        if (event.getCron() == null) {
+            return List.of(eventMapper.map(event));
+        } else {
+            List<EventDetailsDto> resultList = new ArrayList<>();
+            CronExpression cronExpression = CronExpression.parse(event.getCron());
+            LocalDateTime eventStartDateTime = event.getStartDateTime();
+            LocalDateTime eventEndDateTime = event.getEndDateTime();
+            Duration eventDuration = Duration.between(eventStartDateTime, eventEndDateTime);
+            while(eventStartDateTime.isBefore(to)) {
+                if (!eventStartDateTime.isBefore(from)) {
+                    eventEndDateTime = eventStartDateTime.plus(eventDuration);
+                    resultList.add(eventMapper.map(event, eventStartDateTime, eventEndDateTime));
+                }
+                eventStartDateTime = cronExpression.next(eventStartDateTime);
+            }
+            return resultList;
+        }
     }
 
     public EventDetailsDto findById(Long id) {

@@ -6,6 +6,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
+import java.time.LocalDateTime;
+
 @Mapper(imports = { CronExpressionGenerator.class })
 public interface EventMapper {
 
@@ -15,6 +17,10 @@ public interface EventMapper {
     Event map(CreateEventCommand createEventCommand);
 
     EventDetailsDto map(Event e);
+
+    @Mapping(target = "startDateTime", source = "startDateTime")
+    @Mapping(target = "endDateTime", source = "endDateTime")
+    EventDetailsDto map(Event e, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
     @Mappings({
             @Mapping(target = "name", source = "invitee.user.name"),

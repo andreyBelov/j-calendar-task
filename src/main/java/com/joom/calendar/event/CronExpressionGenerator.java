@@ -1,7 +1,5 @@
 package com.joom.calendar.event;
 
-import com.joom.calendar.event.PredefinedSchedule;
-
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalField;
 import java.time.temporal.WeekFields;
@@ -10,6 +8,7 @@ import java.util.Locale;
 public class CronExpressionGenerator {
 
     public static String mapToCronString(PredefinedSchedule schedule, LocalDateTime startDateTime) {
+        if (schedule == null) return null;
         return switch (schedule) {
             case EVERY_DAY -> everyDayCron(startDateTime);
             case EVERY_WEEK -> everyWeekCron(startDateTime);

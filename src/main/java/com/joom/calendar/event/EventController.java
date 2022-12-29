@@ -1,10 +1,11 @@
 package com.joom.calendar.event;
 
 import lombok.RequiredArgsConstructor;
-import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -14,8 +15,11 @@ public class EventController {
     private final EventService eventService;
 
     @GetMapping("/events")
-    public Page<Event> findAllEvents(@ParameterObject Pageable pageable) {
-        return eventService.findEvents(pageable);
+    public List<EventDetailsDto> findAllEvents(
+            Long userId,
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mmX") LocalDateTime from,
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mmX") LocalDateTime to) {
+        return eventService.findEventsByUserIdAndBounds(userId, from, to);
     }
 
     @GetMapping("/events/{id}")
