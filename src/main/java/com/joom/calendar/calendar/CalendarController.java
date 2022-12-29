@@ -1,5 +1,6 @@
 package com.joom.calendar.calendar;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -13,14 +14,14 @@ public class CalendarController {
 
     private final CalendarService calendarService;
 
-    @GetMapping("/users/{userId}/calendars")
-    public Page<Calendar> findAllCalendars(@PathVariable Long userId, @ParameterObject Pageable pageable) {
+    @GetMapping("/calendars")
+    public Page<Calendar> findAllCalendars(@ParameterObject Pageable pageable) {
         return calendarService.findCalendars(pageable);
     }
 
-    @PostMapping("/users/{userId}/calendars")
-    public void createCalendar(@PathVariable Long userId, @RequestBody CreateCalendarCommand createCalendarCommand) {
-        calendarService.saveCalendar(userId, createCalendarCommand);
+    @PostMapping("/calendars")
+    public CalendarDetailsDto createCalendar(@RequestBody CreateCalendarCommand createCalendarCommand) {
+        return calendarService.saveCalendar(createCalendarCommand);
     }
 
 }

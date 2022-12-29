@@ -19,8 +19,8 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public void createUser(@RequestBody CreateUserCommand createUserCommand) {
-        userService.saveUser(createUserCommand);
+    public User createUser(@RequestBody CreateUserCommand createUserCommand) {
+        return userService.saveUser(createUserCommand);
     }
 
 }

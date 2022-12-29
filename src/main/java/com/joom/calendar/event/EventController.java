@@ -1,5 +1,6 @@
 package com.joom.calendar.event;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +17,9 @@ public class EventController {
 
     @GetMapping("/events")
     public List<EventDetailsDto> findAllEvents(
-            Long userId,
-            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mmX") LocalDateTime from,
-            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mmX") LocalDateTime to) {
+            @Parameter(example = "3") Long userId,
+            @Parameter(example = "2022-12-26T09:00Z") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mmX") LocalDateTime from,
+            @Parameter(example = "2022-12-30T18:00Z") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mmX") LocalDateTime to) {
         return eventService.findEventsByUserIdAndBounds(userId, from, to);
     }
 
@@ -28,13 +29,15 @@ public class EventController {
     }
 
     @PostMapping("/events")
-    public void createEvent(@RequestBody CreateEventCommand createEventCommand) {
-        eventService.createEvent(createEventCommand);
+    public EventDetailsDto createEvent(@RequestBody CreateEventCommand createEventCommand) {
+        return eventService.createEvent(createEventCommand);
     }
 
-    @PostMapping("/events/{id}/answer")
-    public void saveAnswer(@PathVariable Long id, @RequestBody SaveAnswerCommand saveAnswerCommand) {
-        eventService.saveAnswer(id, saveAnswerCommand);
+    @PostMapping("/events/{eventId}/answer")
+    public void saveAnswer(
+            @Parameter(example = "3") @PathVariable Long eventId,
+            @RequestBody SaveAnswerCommand saveAnswerCommand) {
+        eventService.saveAnswer(eventId, saveAnswerCommand);
     }
 
 }

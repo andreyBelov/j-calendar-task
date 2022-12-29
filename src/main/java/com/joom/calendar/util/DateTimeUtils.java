@@ -6,6 +6,7 @@ import org.threeten.extra.Interval;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,9 @@ public class DateTimeUtils {
     }
 
     private List<Interval> calculateFreeTimeslots(List<Interval> busyTimeSlots, Interval bounds) {
+        if (busyTimeSlots.isEmpty()) {
+            return List.of(bounds);
+        }
         List<Interval> freeTimeslots = new ArrayList<>();
         Instant freeTimeslotStart;
         Instant freeTimeslotEnd;
@@ -49,6 +53,9 @@ public class DateTimeUtils {
     }
 
     public List<Interval> unionConnectedTimeslots(List<Interval> timeslots) {
+        if (timeslots.isEmpty()) {
+            return Collections.emptyList();
+        }
         if (timeslots.size() == 1) {
             return timeslots;
         }

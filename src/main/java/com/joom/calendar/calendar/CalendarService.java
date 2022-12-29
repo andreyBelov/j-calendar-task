@@ -20,14 +20,15 @@ public class CalendarService {
     private final CalendarMapper calendarMapper;
 
     @Transactional
-    public void saveCalendar(Long userId, CreateCalendarCommand createUserCommand) {
-        Optional<User> userOpt = userRepository.findById(userId);
+    public CalendarDetailsDto saveCalendar(CreateCalendarCommand createUserCommand) {
+        Optional<User> userOpt = userRepository.findById(createUserCommand.getUserId());
         if (userOpt.isPresent()) {
             Calendar calendar = calendarMapper.map(createUserCommand);
             calendar.setUser(userOpt.get());
-            calendarRepository.save(calendar);
+            Calendar savedCalendar = calendarRepository.save(calendar);
+            return calendarMapper.map(savedCalendar);
         } else {
-            throw new EntityNotFoundException("User with id = " + userId + " is not found");
+            throw new EntityNotFoundException("User with id = " + createUserCommand.getUserId() + " is not found");
         }
     }
 

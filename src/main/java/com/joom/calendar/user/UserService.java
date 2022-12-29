@@ -12,9 +12,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public void saveUser(CreateUserCommand createUserCommand) {
+    public User saveUser(CreateUserCommand createUserCommand) {
         User user = userMapper.map(createUserCommand);
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     public Page<User> findUsers(Pageable pageable) {

@@ -13,12 +13,14 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "CALENDARS")
+@Table(
+        name = "CALENDARS",
+        uniqueConstraints = { @UniqueConstraint(name = "UniqueCalendarNameForOneUser", columnNames = { "NAME", "OWNER_ID" }) }
+)
 public class Calendar {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique=true)
     private String name;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="OWNER_ID", nullable=false)

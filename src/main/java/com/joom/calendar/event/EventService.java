@@ -10,14 +10,11 @@ import com.joom.calendar.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,32 +32,14 @@ public class EventService {
     private final InviteeRepository inviteeRepository;
     private final EventMapper eventMapper;
 
-    public List<EventDetailsDto> findEventsByUserIdAndBounds(Long userId, LocalDateTime from, LocalDateTime to) {
-        Specification<Event> byUserIdAndBounds = byUserId(userId)
-                .and(byBounds(from, to));
-        return eventRepository.findAll(byUserIdAndBounds).stream()
-                .flatMap(e -> multiplyEventByCron(e, from, to).stream())
-                .toList();
-    }
+    private final CronEventEvaluator cronEventEvaluator;
 
-    private List<EventDetailsDto> multiplyEventByCron(Event event, LocalDateTime from, LocalDateTime to) {
-        if (event.getCron() == null) {
-            return List.of(eventMapper.map(event));
-        } else {
-            List<EventDetailsDto> resultList = new ArrayList<>();
-            CronExpression cronExpression = CronExpression.parse(event.getCron());
-            LocalDateTime eventStartDateTime = event.getStartDateTime();
-            LocalDateTime eventEndDateTime = event.getEndDateTime();
-            Duration eventDuration = Duration.between(eventStartDateTime, eventEndDateTime);
-            while(eventStartDateTime.isBefore(to)) {
-                if (!eventStartDateTime.isBefore(from)) {
-                    eventEndDateTime = eventStartDateTime.plus(eventDuration);
-                    resultList.add(eventMapper.map(event, eventStartDateTime, eventEndDateTime));
-                }
-                eventStartDateTime = cronExpression.next(eventStartDateTime);
-            }
-            return resultList;
-        }
+    public List<EventDetailsDto> findEventsByUserIdAndBounds(Long userId, LocalDateTime left, LocalDateTime right) {
+        Specification<Event> byUserIdAndBounds = byUserIdEqualTo(userId)
+                .and(byBounds(left, right));
+        return eventRepository.findAll(byUserIdAndBounds).stream()
+                .flatMap(e -> cronEventEvaluator.generateOnTheIntervalAndMap(e, left, right).stream())
+                .toList();
     }
 
     public EventDetailsDto findById(Long id) {
@@ -69,13 +48,15 @@ public class EventService {
                 .orElseThrow(() -> new EntityNotFoundException("Event with id = " + id + " is not found"));
     }
 
-    public void createEvent(CreateEventCommand cec) {
+    @Transactional
+    public EventDetailsDto createEvent(CreateEventCommand cec) {
         Optional<Calendar> calendarOpt = calendarRepository.findById(cec.getCalendarId());
         if (calendarOpt.isPresent()) {
             Event event = eventMapper.map(cec);
             event.setCalendar(calendarOpt.get());
             addInviteesToEvent(event, cec.getInviteeIds());
-            eventRepository.save(event);
+            Event savedEvent = eventRepository.save(event);
+            return eventMapper.map(savedEvent);
         } else {
             throw new EntityNotFoundException("Calendar with id = " + cec.getCalendarId() + " is not found");
         }

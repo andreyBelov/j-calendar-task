@@ -5,6 +5,6 @@ import lombok.Value;
 
 @Value
 public class CreateUserCommand {
-    @Schema(type = "string", required = true, example = "Andrey Beloborodov")
+    @Schema(type = "string", required = true, example = "Ivan Petrov")
     String name;
 }
